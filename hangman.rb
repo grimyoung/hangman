@@ -52,7 +52,9 @@ def check_guess(solution, guess, correct_guesses)
   return correct_guesses
 end
 
-
+#to save need to save the correct_guesses and solutions
+#probably need to rewrite game to either take the loaded in guesses and solution
+#or generate a new solution from the provided dictionary
 def save_game
 end
 
