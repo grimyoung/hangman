@@ -58,9 +58,14 @@ end
 def save_game
 end
 
+
+#need to figure out how to list all available files in a directory
 def load_game
 end
 
+
+#need to rewrite game (or make a "play" method)
+#so that it can either do a new game or load a save game
 def game(word_bank_file)
   solution = random_word(word_bank_file)
   correct_guesses = input_placeholder(solution)
