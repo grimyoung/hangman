@@ -27,6 +27,8 @@ def game_over?(solution, guess)
   end
 end
 
+
+
 def get_input
   input = ""
   puts "Please enter a letter: "
@@ -43,13 +45,21 @@ def get_input
   return input
 end
 
-def check_guess(solution, guess, correct_guesses)
+def check_guess(solution, guess, correct_guesses, wrong_guesses)
+  match = false
   solution.each_char.with_index do |char, i|
     if char == guess
       correct_guesses[i] = solution[i]
+      match = true
     end
   end
-  return correct_guesses
+  if ! match
+    wrong_guesses << guess
+    puts "Incorrect!"
+  else
+    puts "Correct!"
+  end
+  return correct_guesses, wrong_guesses
 end
 
 #to save need to save the correct_guesses and solutions
@@ -69,15 +79,27 @@ end
 def game(word_bank_file)
   solution = random_word(word_bank_file)
   correct_guesses = input_placeholder(solution)
-
-
-  letter = get_input
-
-  correct_guesses = check_guess(solution, letter, correct_guesses)
-  print_word(correct_guesses)
-
-
-
+  wrong_guesses = []
+  chances = 5
+  puts solution, correct_guesses, wrong_guesses, chances
+  while ! game_over?(solution,correct_guesses) && wrong_guesses.length < chances
+    letter = get_input
+    puts
+    if correct_guesses.include?(letter) || wrong_guesses.include?(letter)
+      puts "You've already guessed that"
+    else 
+      correct_guesses, wrong_guesses = check_guess(solution, letter, correct_guesses, wrong_guesses)
+      print_word(correct_guesses)
+      puts "Misses: " + wrong_guesses.join(",")
+    end  
+    puts
+  end
+  if game_over?(solution,correct_guesses)
+    puts "Congratulations! Word Solved."
+  else
+    puts "Too bad! The correct word was " + solution
+  end
+  puts
 end
 
 game("5desk.txt")
