@@ -1,15 +1,22 @@
 class Hangman
-  attr_accessor :solution, :correct_guesses, :wrong_guesses
+  attr_accessor :solution, :correct_guesses, :wrong_guesses, :load_file, :loaded
 
-  def initialize(word_bank_file = "5desk.txt", options = {})
-    if options.empty?
-      @solution = random_word(word_bank_file)
+  def initialize(load = "dictionary", load_file = "5desk.txt")
+    if load == "dictionary"
+      @solution = random_word(load_file)
       @correct_guesses = input_placeholder(solution)
       @wrong_guesses = []
     else
-      @solution = options["solution"]
-      @correct_guesses = options["correct_guesses"]
-      @wrong_guesses = options["wrong_guesses"]
+      @loaded = true
+      @load_file = load_file
+      game_state = load_game(load_file)
+      @solution = game_state[0]
+      @correct_guesses = game_state[1]
+      @wrong_guesses = game_state[2].split(",")
+      puts "File "+ load_file + " Loaded"
+      print_word(correct_guesses)
+      puts "Misses: " + wrong_guesses.join(",")
+      puts
     end
   end
 
@@ -48,7 +55,7 @@ class Hangman
     loop do
       input = gets.chomp.downcase
       alphabetic = input.match(/^[[:alpha:]]$/)
-      break if input.length == 1 && alphabetic || input = "save"
+      break if input.length == 1 && alphabetic || input == "save"
       if input.length != 1
         puts "Please enter one letter at a time"
       elsif not alphabetic
@@ -63,7 +70,9 @@ class Hangman
     input = gets.chomp.downcase
     if input == "y"
       save_game
+      return true    
     end
+    return false
   end
 
 
@@ -85,32 +94,40 @@ class Hangman
     return correct_guesses, wrong_guesses
   end
 
-  #need to move save_game and load_game outside of hangman.rb
   def save_game
-    filename = Dir.entries("saved_games").length.to_s + ".txt"
-    save_file = File.open(filename, "w")
-    savefile.puts solution
-    savefile.puts correct_guesses
-    savefile.puts wrong_guesses
-    savefile.close
+    if loaded
+      file_name = load_file
+    else
+      file_name = "saved_games/" + Dir.entries("saved_games").length.to_s + ".txt"
+    end
+    save_file = File.open(file_name, "w")
+    save_file.puts solution
+    save_file.puts correct_guesses
+    save_file.puts wrong_guesses.join(",")
+    save_file.close
+    puts "Game Saved as " + file_name
   end
 
-
-  #need to figure out how to list all available files in a directory
-  def load_game
+  def load_game(file_name)
+    game_state = []
+    File.open(file_name).readlines.each do |line|
+      game_state << line.chomp
+    end
+    return game_state
   end
 
-
-  #need to rewrite game (or make a "play" method)
-  #so that it can either do a new game or load a save game
   def game
-    chances = 5
-    puts solution, correct_guesses, wrong_guesses, chances
+    chances = solution.length - 2
+    #puts solution, correct_guesses, wrong_guesses, chances
     while ! game_over? && wrong_guesses.length < chances
       letter = get_input
       puts
-      if letter == save
-        confirm_save
+      if letter == "save"
+        saved = confirm_save
+        if saved
+          puts
+          return
+        end
       else
         if correct_guesses.include?(letter) || wrong_guesses.include?(letter)
           puts "You've already guessed that"
@@ -118,7 +135,7 @@ class Hangman
           correct_guesses, wrong_guesses = check_guess(letter)
           print_word(correct_guesses)
           puts "Misses: " + wrong_guesses.join(",")
-        end  
+        end
       end
       puts
     end
@@ -131,4 +148,5 @@ class Hangman
   end
 end
 
-Hangman.new("5desk.txt").game
+#Hangman.new("dictionary", "5desk.txt").game()
+Hangman.new("load", "saved_games/4.txt").game()
